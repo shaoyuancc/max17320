@@ -12,12 +12,33 @@ pub enum Register {
     ProtAlrt = 0xAF,
     CommStat = 0x61,
     Cell1 = 0xD8,
+    Cell2 = 0xD7,
+    Cell3 = 0xD6,
+    Cell4 = 0xD5,
+    Batt = 0xDA,
+    Pckp = 0xDB,
     DieTemp = 0x34,
+    Config = 0x0B,
+    Config2 = 0xAB,
+    VAlrtTh = 0x01,
+    TAlrtTh = 0x02,
+    SAlrtTh = 0x03,
+    IAlrtTh = 0xAC,
+    AgeForecast = 0xB9,
+    Age = 0x07,
+    Cycles = 0x17,
+    RCell = 0x14,
 }
 
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum RegisterNvm {
     NBattStatus = 0xA8,
     NPackCfg = 0xB5,
+    NConfig = 0xB0,
+    NVAlrtTh = 0x8C,
+    NTAlrtTh = 0x8D,
+    NSAlrtTh = 0x8F,
+    NIAlrtTh = 0x8E,
 }
 
 /// All flags contained within the status register
@@ -81,12 +102,6 @@ pub enum StatusCode {
     /// to 0x0000. ProtAlrt is set to 0 at power-up.
     ProtectionAlert = 0b1000_0000_0000_0000,
 }
-
-impl StatusCode {
-    pub fn has_status(look_for: StatusCode, within: u16) -> bool {
-        (look_for as u16 & within) > 0
-    }
-}
 /// All fault states of the protection state machine
 pub enum ProtStatusCode {
     /// Flag to indicate ship state
@@ -121,11 +136,6 @@ pub enum ProtStatusCode {
     OvertemperatureCharging = 0b0100_0000_0000_0000,
     /// Charge communication watchdog timer (Charging fault)
     ChargeWatchDogTimer = 0b1000_0000_0000_0000,
-}
-impl ProtStatusCode {
-    pub fn has_status(look_for: ProtStatusCode, within: u16) -> bool {
-        (look_for as u16 & within) > 0
-    }
 }
 
 /// All fault states of the protection state machine
@@ -163,8 +173,56 @@ pub enum ProtAlertCode {
     /// Charge communication watchdog timer (Charging fault)
     ChargeWatchDogTimer = 0b1000_0000_0000_0000,
 }
-impl ProtAlertCode {
-    pub fn has_status(look_for: ProtStatusCode, within: u16) -> bool {
-        (look_for as u16 & within) > 0
-    }
+
+pub enum CommStatCode {
+    /// Set this bit to 1 to forcefully turn off DIS FET ignoring
+    /// all other conditions if nProtCfg.CmOvrdEn is enabled.
+    /// DIS FET remains off as long as this bit stays to 1. Clear to 0 for
+    /// normal operation. Write Protection must be disabled before writing
+    /// to the DISOff bit.
+    DischargeOff = 1 << 9,
+    /// Set this bit to 1 to forcefully turn off CHG FET ignoring all other
+    /// conditions if nProtCfg.CmOvrdEn is enabled. CHG FET remains off as
+    /// long as this bit stays set to 1. Clear to 0 for normal operation.
+    /// Write Protection must be disabled before writing to the CHGOff bit.
+    ChargeOff = 1 << 8,
+    ///  Write protects register pages 1Dh
+    WriteProtection5 = 1 << 7,
+    ///  Write protects register pages 1Ch
+    WriteProtection4 = 1 << 6,
+    ///  Write protects register pages 18h, 19h
+    WriteProtection3 = 1 << 5,
+    ///  Write protects register pages 01h, 02h, 03h, 04h, 0Bh, 0Dh
+    WriteProtection2 = 1 << 4,
+    ///  Write protects register pages 1Ah, 1Bh, 1Eh
+    WriteProtection1 = 1 << 3,
+    /// This bit indicates the results of the previous SHA-256 or nonvolatile
+    /// memory related command sent to the command register. This bit sets if
+    /// there was an error executing the command or if the Full Reset command
+    /// is executed. Once set, the bit must be cleared by system software in
+    /// order to detect the next error. Write Protection must be disabled before
+    /// the NVError bit can be cleared by the host.
+    NonvolatileError = 1 << 2,
+    /// This read only bit tracks if nonvolatile memory is busy or idle.
+    /// NVBusy defaults to 0 after reset indicating nonvolatile memory is idle.
+    /// This bit sets after a nonvolatile related command is sent to the command
+    /// register, and clears automatically after the operation completes.
+    NonvolatileBusy = 1 << 1,
+    /// Write Protection Global Enable. Set to 1 to write protect all register pages.
+    /// Clear to 0 to allow individual write protect bits (WP1–WP5) to be disabled.
+    WriteProtectionGlobal = 1,
+}
+
+pub fn has_code(look_for: u16, within: u16) -> bool {
+    (look_for & within) > 0
+}
+
+/// Set the kth bit (0 indexed) of n
+pub(crate) fn set_bit(n: u16, k: u8) -> u16 {
+    n | (1 << k)
+}
+
+/// Clear the kth bit (0 indexed) of n
+pub(crate) fn clear_bit(n: u16, k: u8) -> u16 {
+    n & !(1 << k)
 }

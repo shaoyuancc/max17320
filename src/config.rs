@@ -33,7 +33,7 @@ pub enum AlwaysOnRegulatorConfiguration {
 
 /// Enable Pckp and Batt Channels update.
 #[derive(Debug, Copy, Clone, PartialEq)]
-pub enum BatteryPackageUpdate {
+pub enum BatteryPackUpdate {
     /// Pckp/Batt channels update every 22.4s
     UpdateEvery22p4s = 0,
     /// Pckp/Batt channels update after all cell measurements are completed
