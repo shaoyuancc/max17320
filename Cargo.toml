@@ -4,9 +4,10 @@ version = "0.1.0"
 description = "An embedded hal driver for the MAX17320 (2S-4S ModelGauge m5 Fuel Gauge with Protector, Internal Self-Discharge Detection and SHA-256 Authentication)"
 authors = ["Shao Yuan <flossy_lineage.0b@icloud.com>"]
 categories = ["embedded", "hardware-support", "no-std"]
-keywords = ["hal", "IO",  "embedded-hal-driver", "max17320", "fuel guage"]
+keywords = ["hal", "IO",  "embedded-hal-driver", "max17320", "fuel-guage"]
 license = "MIT"
 readme = "README.md"
+repository = "https://github.com/shaoyuancc/max17320"
 edition = "2021"
 exclude = [ "doc", "*.jpg", "*.png", "*.bmp" ]
 
